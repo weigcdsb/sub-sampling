@@ -142,7 +142,7 @@ For example, this is the mVc for adaptive LASSO:\\
 		1, sum))
 	}
 \end{lstlisting}
-Here, \textbf{three versions of MSE are calculated}: (1) $MSE_{A-LASSO}=S^{-1}\sum_{s=1}^{S}|| \breve{\beta}^{s} - \hat{\beta}_{A-LASSO}||^2$, (2) $MSE_{MLE}=S^{-1}\sum_{s=1}^{S}|| \breve{\beta}^{s} - \hat{\beta}_{MLE}||^2$ and (3) $MSE_{true}=S^{-1}\sum_{s=1}^{S}|| \breve{\beta}^{s} - \beta_{true}||^2$. Here, $breve{\beta}^{s}$ is the estimate from the $s^th$ subsample, $\hat{\beta}_{A-LASSO}$ is Adaptive LASSO estimate from full data, $\hat{\beta}_{MLE}$ is the MLE estimate from full data and $\beta_{true}$ is the true value.\\
+Here, \textbf{three versions of MSE are calculated}: (1) $MSE_{A-LASSO}=S^{-1}\sum_{s=1}^{S}|| \breve{\beta}^{(s)} - \hat{\beta}_{A-LASSO}||^2$, (2) $MSE_{MLE}=S^{-1}\sum_{s=1}^{S}|| \breve{\beta}^{(s)} - \hat{\beta}_{MLE}||^2$ and (3) $MSE_{true}=S^{-1}\sum_{s=1}^{S}|| \breve{\beta}^{(s)} - \beta_{true}||^2$. Here, $\breve{\beta}^{(s)}$ is the estimate from the $s^th$ subsample, $\hat{\beta}_{A-LASSO}$ is Adaptive LASSO estimate from full data, $\hat{\beta}_{MLE}$ is the MLE estimate from full data and $\beta_{true}$ is the true value.\\
 \\
 The results are as follows:\\
 \includegraphics[width = .5\textwidth]{MSE_adLASSO.png}\includegraphics[width = .5\textwidth]{MSE_MLE.png}
