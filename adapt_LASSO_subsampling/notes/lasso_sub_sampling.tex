@@ -83,7 +83,7 @@ Here I’m thinking to use adaptive LASSO to achieve asymptotic consistency. The
 To do that, we may follow the rationale of OSMAC, i.e. find the asymptotic distribution of $\hat{\beta}_{A-lasso}^{S}-\hat{\beta}_{A-lasso}^{F}$, where $\hat{\beta}_{A-lasso}^{S}$ is the adaptive LASSO solution under subsamples and $\hat{\beta}_{A-lasso}^{F}$ is the adaptive LASSO solution under full data. Then we can derive SSP by minimizing the trace of asymptotic variance (A-optimization) or doing L-optimization. But I don’t know if it is possible.\\
 \\
 My intuition is that maybe we can treat the adaptive LASSO solution as MLE and implement SSC derived before, since adaptive LASSO has the "oracle property". Well, it should be incorrect...
-But I still tried to run simulations to see what will go run.\\
+But I still tried to run simulations to see what will happen.\\
 \\
 The data is generated follow as mzNormal, but the dimension of $\beta$ is 40, with the first 10 to be 0.5 and the remaining 30 be 0. The data is generated as follows:\\
 \begin{lstlisting}
@@ -148,11 +148,6 @@ The results are as follows:\\
 \includegraphics[width = .5\textwidth]{MSE_adLASSO.png}\includegraphics[width = .5\textwidth]{MSE_MLE.png}
 \includegraphics[width = .5\textwidth]{MSE_true.png}\\
 I'm not sure if this make sense...
-
-
-
-
-
 
 
 \end{document}
