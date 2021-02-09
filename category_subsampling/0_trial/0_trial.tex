@@ -4,30 +4,32 @@
 
 \begin{document}
 
-Here, I tried to see the influence of different coding on sub-sampling in logistic regression. 
 
-In the first example, there are 5 continuous variables and 1 categorical variable with 2 levels. 1 dummy variable is used, and it is coded in 2 ways: 1/0 (\textbf{code 1}) and 1/-1 (\textbf{code 2}). Including intercept, there are 7 parameters and the true values are all 0.5 under \textbf{code 1}.
+OK, if I compare MSE for $\beta$ directly, it indeed cause the problem. Take 1/0 (\textbf{code 1}) vs. 1/-1 (\textbf{code 2}) as an example. Let the intercept and coefficient for categorical variable be $\beta_0$ and $\beta_c$ for \textbf{code 1}, while  $\beta'_0$ and $\beta'_c$ for \textbf{code 2}. Then $\beta'_0 = \beta_0 + \beta_c/2$ and $\beta'_c = \beta_c/2$. So the variance of $\boldsymbol{\breve{\beta}} - \hat{\boldsymbol{\beta}}_{MLE}$ for \textbf{code 2} will be smaller than \textbf{code 1}, because $\beta'_c = \beta_c/2$. This will lead to a lower MSE for \textbf{code 2}.
 
-In the second example,  there are 4 continuous variables and 1 categorical variable with 3 levels. 2 dummy variables are used. The three levels are coded in 2 ways: 1)\textbf{code 1}: (1, 0), (0, 1), (0, 0) and 2)\textbf{code 2}: (1, 0), (0, 1), (-1, -1). Again, true values for all 7 parameters are 0.5 under \textbf{code 1}.
+To fix that, I now compare the MSE for linear predictor, i.e. define MSE as $S^{-1}\sum_{s=1}^{S}\frac{||\boldsymbol{X}\breve{\boldsymbol{\beta}}^{(s)} - \boldsymbol{X}\hat{\boldsymbol{\beta}}_{MLE}||^2}{n - p}$
 
-The performance of sub-sampling for these 2 cases are summarized in the following 2 plots:
+Now, To make the results more significant, I only include 1 continuous variable with one categorical variable with 2 levels. 
 
-\includegraphics[width = .6\textwidth]{plot_2levels.png}
-\includegraphics[width = .6\textwidth]{plot_3levels.png}
+\includegraphics[width = .8\textwidth]{plot_2levels.png}
 
-We can see that including 0 in the coding will reduce the performance of sub-sampling. This is as expected. If we take a look on sub-sampling based on L-optimality criterion:
+It seems that coding baseline as (-1, -1) is worse than coding as (0, 0). As we can imagine, coding the baseline with less absolute values will make things better. Here I use the same data, but code the baseline as (2, 2):
 
+\includegraphics[width = .8\textwidth]{plot_2levels_2.png}
+
+Now, it looks much worse, especially for L-optimization. (A-optimization is somewhat more robust to different coding, because of $\boldsymbol{M}_{X}^{-1}$ term)
+
+Based on this observation, I may suggest to code the variable with least total absolute values (or the smallest Frobenius norm for dummy variable matrix (?)), without loss of interpretation. In other words, we should include as much 0 as possible.
+
+
+Potential explanation:
+
+Still consider L-optimization:
 \begin{equation*}
-	\pi_{i}^{mVc} = \frac{|y_i-p_i(\hat{\beta}_MLE)||\boldsymbol{x}_i||}{\sum_{j=1}^{n}|y_i-p_i(\hat{\beta}_MLE)||\boldsymbol{x}_i||}
+	\pi_{i}^{mVc} = \frac{|y_i-p_i(\hat{\beta}_{MLE})||\boldsymbol{x}_i||}{\sum_{j=1}^{n}|y_i-p_i(\hat{\beta}_{MLE})||\boldsymbol{x}_i||}
 \end{equation*}
+If the dummy variable is coded as large absolute values, it will let the dummy variable guide the SSP, and this will cause bias?
 
-When there exists 0 in $||\boldsymbol{x}_i||$, it will cause problems.
-
-
-
-
-	
-	
 	
 \end{document}
 

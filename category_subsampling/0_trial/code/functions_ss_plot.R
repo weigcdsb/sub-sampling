@@ -59,9 +59,10 @@ ss_core <- function(y, X, S = 1000, r0 = 200,
                                famil = binomial(link = 'logit'))$coefficients
   }
   
-  full.mse <- mean(apply((full.beta.boot -
-                            matrix(rep(beta.mle, S),nrow = S, byrow = T))^2,
-                         1, sum))
+  full.mse <- mean(apply((X %*% t(full.beta.boot -
+                                    matrix(rep(beta.mle, S),
+                                           nrow = S, byrow = T)))^2,
+                         2, sum))/(n - nBeta)
   
   
   ## (b) different SSPs
@@ -80,9 +81,10 @@ ss_core <- function(y, X, S = 1000, r0 = 200,
       unif.beta.boot[j, ] <- t(weighted.MLE(unif.X, unif.y, unif.ssp))
     }
     
-    unif.mse[i] <- mean(apply((unif.beta.boot -
-                                 matrix(rep(beta.mle, S),nrow = S, byrow = T))^2,
-                              1, sum))
+    unif.mse[i] <- mean(apply((X %*% t(unif.beta.boot -
+                                         matrix(rep(beta.mle, S),
+                                                nrow = S, byrow = T)))^2,
+                              2, sum))/(n - nBeta)
     
   }
   
@@ -112,9 +114,10 @@ ss_core <- function(y, X, S = 1000, r0 = 200,
       mMSE.beta.boot[j, ] <- t(weighted.MLE(mMSE.X, mMSE.y, mMSE.ssp.star))
     }
     
-    mMSE.mse[i] <- mean(apply((mMSE.beta.boot -
-                                 matrix(rep(beta.mle, S),nrow = S, byrow = T))^2,
-                              1, sum))
+    mMSE.mse[i] <- mean(apply((X %*% t(mMSE.beta.boot -
+                                         matrix(rep(beta.mle, S),
+                                                nrow = S, byrow = T)))^2,
+                              2, sum))/(n - nBeta)
     
   }
   
@@ -141,9 +144,10 @@ ss_core <- function(y, X, S = 1000, r0 = 200,
       mVC.beta.boot[j, ] <- t(weighted.MLE(mVC.X, mVC.y, mVC.ssp.star))
     }
     
-    mVC.mse[i] <- mean(apply((mVC.beta.boot -
-                                matrix(rep(beta.mle, S),nrow = S, byrow = T))^2,
-                             1, sum))
+    mVC.mse[i] <- mean(apply((X %*% t(mVC.beta.boot -
+                                        matrix(rep(beta.mle, S),
+                                               nrow = S, byrow = T)))^2,
+                             2, sum))/(n - nBeta)
     
   }
   

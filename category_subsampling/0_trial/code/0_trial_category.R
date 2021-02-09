@@ -7,19 +7,19 @@ source("D:\\GitHub\\sub-sampling\\category_subsampling\\0_trial\\code\\functions
 ## code 2: 1/ -1
 
 set.seed(123)
-n <- 10000
-nBeta <- 7
+n <- 1000
+nBeta <- 4
 
 nBeta_cont <- nBeta-2
-beta_cont <- rep(0.5, nBeta_cont)
+beta_cont <- rep(.5, nBeta_cont)
 Sigma_cont <- matrix(0.5, nrow = nBeta_cont, ncol = nBeta_cont)
 diag(Sigma_cont) <- 1
 mu_cont <- rep(0, nBeta_cont)
 X_cont <- mvrnorm(n, mu_cont, Sigma_cont)
 
 ## code 1: 1/ 0
-beta0_1 <- 0.5
-beta_cat1 <- 0.5
+beta0_1 <- 1
+beta_cat1 <- 2
 X1 <- cbind(1, X_cont, c(rep(1, n/2), rep(0, n/2)))
 ## code 2: 1/ -1
 X2 <- cbind(1, X_cont, c(rep(1, n/2), rep(-1, n/2)))
@@ -31,8 +31,8 @@ y <- rbinom(n, 1, prob = p)
 
 ##############################################
 #### X1: 1/0 code; X2: 1/-1 code
-ss_mses1 <- ss_core(y, X1)
-ss_mses2 <- ss_core(y, X2)
+ss_mses1 <- ss_core(y, X1, r = c(100, 200, 300, 500))
+ss_mses2 <- ss_core(y, X2, r = c(100, 200, 300, 500))
 
 save.image("category_ss_2levels.RData")
 
@@ -41,7 +41,7 @@ save.image("category_ss_2levels.RData")
 
 png('D:\\GitHub\\sub-sampling\\category_subsampling\\0_trial\\plot_2levels.png',
     width = 600,height = 600, res = 100)
-compPlot(ss_mses1, ss_mses2, '1/0', '1/-1', ylim = c(0, 0.4))
+compPlot(ss_mses1, ss_mses2, '1/0', '1/-1', ylim = c(0, 100))
 dev.off()
 
 #################################
@@ -91,7 +91,7 @@ save.image("category_ss_3level.RData")
 
 png('D:\\GitHub\\sub-sampling\\category_subsampling\\0_trial\\plot_3levels.png',
     width = 600,height = 600, res = 100)
-compPlot(ss_mses1, ss_mses2, '10/01/01', '10/01/-1-1', ylim = c(0, 0.5))
+compPlot(ss_mses1, ss_mses2, '10/01/01', '10/01/-1-1', ylim = c(0, 2000))
 dev.off()
 
 
