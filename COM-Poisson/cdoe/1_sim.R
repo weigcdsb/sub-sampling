@@ -1,3 +1,5 @@
+# setwd("D:\\GitHub\\sub-sampling\\COM-Poisson\\cdoe")
+# install.packages("COMPoissonReg_0.7.0.tar.gz", repos = NULL, type="source")
 library(COMPoissonReg)
 
 set.seed(123)
@@ -8,13 +10,13 @@ beta <- c(0, 2)
 lam <- exp(cbind(1, x) %*% beta)
 
 g <- rnorm(n, -1, 1)
-gamma <- c(1, 0.5)
-nu <- exp(cbind(1, g) %*% gamma)
+gam <- c(1, 0.5)
+nu <- exp(cbind(1, g) %*% gam)
 
-plot(lam)
-plot(nu)
-abline(h = 1)
-plot(qcmp(rep(0.5, n), lam, nu))
+# plot(lam)
+# plot(nu)
+# abline(h = 1)
+# plot(qcmp(rep(0.5, n), lam, nu))
 
 y <- rcmp(n, lam, nu)
 
@@ -30,7 +32,7 @@ ptm <- proc.time()
 fit2 <- glm.cmp(formula.lambda = y ~ x)
 proc.cmp.nuOff <- proc.time() - ptm
 
-# fit3: fit nu: log(nu) = g %*% gamma
+# fit3: fit nu: log(nu) = g %*% gam
 ptm <- proc.time()
 fit3 <- glm.cmp(formula.lambda = y ~ x, formula.nu = y ~ g)
 proc.cmp.nuOn <- proc.time() - ptm
@@ -103,70 +105,292 @@ mean((y - predict.cmp.quantile(0.5, fit3, cbind(1, x)))^2)
 
 #################################
 #### common functions
-moment_sum <- function(lam, nu, nMax = 10000, tol = 1e-6){
-  term <- rep(NA, 6)
-  cum <- rep(0, 6)
-  for(i in 1:nMax){
+moment_sum <- function(lam, nu, nMax = 1000, gradOnly){
+  
+  
+  if(lam >= 2 & nu <= 1){
+    alph <- lam^(1/nu)
+    E_y <- alph - (nu - 1)/(2*nu) -
+      (nu^2 - 1)/(alph*24*(nu^2)) -
+      (nu^2 - 1)/(alph^2*24*(nu^3))
     
-    term <- c(exp((i-1)*log(lam) - nu*lgamma(i)),
-              exp(log(i-1) + (i-1)*log(lam) - nu*lgamma(i)),
-              exp( 2*log(i-1) + (i-1)*log(lam) - nu*lgamma(i)),
-              exp((i-1)*log(lam) - nu*lgamma(i))*lgamma(i),
-              exp((i-1)*log(lam) - nu*lgamma(i))*(lgamma(i))^2,
-              exp(log(i-1) + (i-1)*log(lam) - nu*lgamma(i))*lgamma(i))
+    E_logyFac <- alph*(log(lam)/nu - 1) +
+      log(lam)/(2*nu^2) + 1/(2*nu) + log(2*pi)/2 -
+      (1/(24*alph))*(1 + 1/(nu^2) + log(lam)/nu - log(lam)/(nu^3)) -
+      (1/(24*alph^2))*(1/(nu^3) + log(lam)/(nu^2) - log(lam)/nu^4)
     
-    !is.na(max(pmax(term)/ pmin(term))) & 
-    
-    if(i > 5 & !is.na(max(pmax(term)/ pmin(term)))){
-      if(max(pmax(term)/ pmin(term)) < tol){
-        break
-      }
+    if(gradOnly){
+      Var_y <- NA
+      Var_logyFac <- NA
+      Cov_y_logyFac <- NA
+    }else{
+      Var_y <- alph/nu + (nu^2 - 1)/(alph*24*(nu^3)) +
+        (nu^2 - 1)/(alph^2*12*(nu^4))
+      
+      
+      Var_logyFac <- alph*(log(lam))^2/(nu^3) + log(lam)/(nu^3) + 1/(2*nu^2) +
+        (1/(alph*24*(nu^5)))*(-2*(nu^2) + 4*nu*log(lam) + (-1 + nu^2)*(log(lam))^2) +
+        (1/((alph^2)*24*(nu^6)))*(-3*nu^2 - 2*nu*(-3 + nu^2)*log(lam) + 2*(-1 + nu^2)*(log(lam))^2)
+      
+      
+      Cov_y_logyFac <- alph*log(lam)/(nu^2) + 1/(2*nu^2) +
+        (1/(24*alph))*(2/(nu^3) + log(lam)/(nu^2) - log(lam)/(nu^4)) -
+        (1/(24*alph^2))*(1/(nu^2)- 3/(nu^4) - 2*log(lam)/(nu^3) + 2*log(lam)/(nu^5))
     }
-    cum <- cum + term
+    
+  }else{
+    pmf <- dcmp(0:nMax, lam, nu)
+    E_y <- sum((0:nMax)*pmf)
+    E_logyFac <- sum((lgamma(1:(nMax + 1)))*pmf)
+    
+    if(gradOnly){
+      Var_y <- NA
+      Var_logyFac <- NA
+      Cov_y_logyFac <- NA
+    }else{
+      Var_y <- sum((0:nMax)^2*pmf) - E_y^2
+      Var_logyFac <- sum((lgamma(1:(nMax + 1))^2)*pmf) - E_logyFac^2
+      Cov_y_logyFac <- sum((0:nMax)*(lgamma(1:(nMax + 1)))*pmf) -E_y*E_logyFac
+    }
   }
   
-  E_y <- cum[2]/cum[1]
-  Var_y <- cum[3]/cum[1] - E_y^2
-  E_logyFac <- cum[4]/cum[1]
-  Var_logyFac <- cum[5]/cum[1] - E_logyFac^2
-  Cov_y_logyFac <- cum[6]/cum[1] - E_y*E_logyFac
   return(list(E_y = E_y, Var_y = Var_y,
               E_logyFac = E_logyFac, Var_logyFac = Var_logyFac,
               Cov_y_logyFac = Cov_y_logyFac))
 }
 
-
-weighted.MLE <- function(X, G, y, ssp, maxIter = 1000){
+gradInfo <- function(x, g, y, beta, gam, gradOnly = F){
+  X <- cbind(1, x)
+  G <- cbind(1, g)
+  lam <- c(exp(X%*% beta))
+  nu <- c(exp(G %*% gam))
   
-  beta <- rep(0, ncol(X))
-  gamma <- rep(0, ncol(G))
-  
-  update <- Inf
-  iter <- 0
-  while((sum(update^2) > 1e-6)& (iter < maxIter)){
-    
-    lam <- exp(X %*% beta)
-    nu <- exp(G %*% gamma)
-    moments <- mapply(moment_sum, lam, nu)
-    
-    
-    
-    
-    
-    OP <- t(X) %*% (prob * (1 - prob)* X/ ssp)
-    update <- solve(OP) %*% apply((y - prob)* X/ ssp, 2, sum)
-    beta <- beta + update
-    iter <- iter + 1
-  }
-  
-  
-  if(iter < maxIter){
-    return(beta)
+  if(gradOnly){
+    moments <- mapply(moment_sum, lam, nu, gradOnly = T)
+    info <- NA
   }else{
-    print('Not Converge')
-    return()
+    moments <- mapply(moment_sum, lam, nu, gradOnly = F)
   }
+  
+  grad1_each <- (y - unlist(moments['E_y', ]))* X
+  grad2_each <- nu*(unlist(moments['E_logyFac', ]) - lgamma(y+1))* G
+  grad_each <- cbind(grad1_each, grad2_each)
+  
+  grad <- apply(grad_each, 2, sum)
+  
+  
+  if(!gradOnly){
+    info1 <- t(X) %*% (unlist(moments['Var_y', ]) * X)
+    info2 <- t(X) %*% (-nu*unlist(moments['Cov_y_logyFac', ])* G)
+    info3 <- t(info2)
+    info4 <- t(G) %*% (nu*(nu*unlist(moments['Var_logyFac', ]) -
+                             unlist(moments['E_logyFac', ]) +
+                             lgamma(y+1)) * G)
+    
+    info <- rbind(cbind(info1, info2), cbind(info3, info4))
+    
+  }
+  
+  return(list(grad_each = grad_each,
+              grad = grad,
+              info = info))
 }
+
+
+pilot <- function(x, g, y, r0){
+  
+  n <- length(y)
+  pilot.ssp <- rep(1/n, n)
+  pilot.idx <- sample(1:n, r0, replace = T, prob = pilot.ssp)
+  pilot.y <- y[pilot.idx]
+  pilot.x <- x[pilot.idx]
+  pilot.g <- g[pilot.idx]
+  pilot.ssp.star <- rep(1/r0, r0)
+  
+  fit.pilot <- glm.cmp(pilot.y ~ pilot.x, pilot.y ~ pilot.g,
+                       weights = 1/pilot.ssp.star)
+  
+  return(list(theta = coef(fit.pilot),
+              ssp = pilot.ssp.star,
+              idx = pilot.idx,
+              x = pilot.x,
+              g = pilot.g,
+              y = pilot.y))
+}
+
+############################
+S <- 1000
+fit.mle <- glm.cmp(y ~ x, y ~ g)
+theta.mle <- coef(fit.mle)
+
+## (a) full data
+full.theta.boot <- matrix(NA, nrow = S, ncol = length(beta) + length(gam))
+for(i in 1:S){
+  tmp.idx <- sample(1:n, n, replace = T)
+  tmp.y <- y[tmp.idx]
+  tmp.x <- x[tmp.idx]
+  tmp.g <- g[tmp.idx]
+  
+  full.theta.boot[i, ] <- coef(glm.cmp(tmp.y ~ tmp.x, tmp.y ~ tmp.g))
+}
+
+full.mse.beta <- mean(apply((full.theta.boot[, 1:length(beta)] -
+                               matrix(rep(theta.mle[1:length(beta)], S),nrow = S, byrow = T))^2,
+                            1, sum))
+full.mse.gam <- mean(apply((full.theta.boot[, (length(beta)+1):length(theta.mle)] -
+                              matrix(rep(theta.mle[(length(beta)+1):length(theta.mle)], S),nrow = S, byrow = T))^2,
+                           1, sum))
+
+full.mse <- mean(apply((full.theta.boot -
+                          matrix(rep(theta.mle, S),nrow = S, byrow = T))^2,
+                       1, sum))
+
+## (b) different SSPs
+r0 <- 200
+# r <- c(100, 200, 300, 500, 700, 1000)
+r <- c(100, 200, 300)
+# b.1 uniform
+
+unif.mse.beta <- rep(NA, length(r))
+unif.mse.gam <- rep(NA, length(r))
+unif.mse <- rep(NA, length(r))
+
+for(i in 1:length(r)){
+  unif.r.total <- r[i] + r0
+  unif.theta.boot <- matrix(NA, nrow = S, ncol = length(beta) + length(gam))
+  
+  for(j in 1:S){
+    unif.idx <- sample(1:n, unif.r.total, replace = T)
+    unif.y <- y[unif.idx]
+    unif.x <- x[unif.idx]
+    unif.g <- g[unif.idx]
+    
+    unif.ssp <- 1/unif.r.total
+    unif.theta.boot[j, ] <- coef(glm.cmp(unif.y ~ unif.x, unif.y ~ unif.g,
+                                         weights = 1/unif.ssp))
+  }
+  
+  unif.mse.beta[i] <- mean(apply((unif.theta.boot[, 1:length(beta)] -
+                                    matrix(rep(theta.mle[1:length(beta)], S),nrow = S, byrow = T))^2,
+                                 1, sum))
+  unif.mse.gam[i] <- mean(apply((unif.theta.boot[, (length(beta)+1):length(theta.mle)] -
+                                   matrix(rep(theta.mle[(length(beta)+1):length(theta.mle)], S),nrow = S, byrow = T))^2,
+                                1, sum))
+  
+  unif.mse[i] <- mean(apply((unif.theta.boot -
+                               matrix(rep(theta.mle, S),nrow = S, byrow = T))^2,
+                            1, sum))
+}
+
+# plot(r, unif.mse.beta, type = 'l', ylim = c(0, 1))
+# plot(r, unif.mse.gam, type = 'l', ylim = c(0, 1))
+# plot(r, unif.mse, type = 'l', ylim = c(0, 1))
+
+# b.2 mMSE
+mMSE.mse.beta <- rep(NA, length(r))
+mMSE.mse.gam <- rep(NA, length(r))
+mMSE.mse <- rep(NA, length(r))
+
+for(i in 1:length(r)){
+  
+  mMSE.theta.boot <- matrix(NA, nrow = S, ncol = length(beta) + length(gam))
+  
+  for(j in 1:S){
+    
+    pilot.result <- pilot(x, g, y, r0)
+    
+    pilot.theta <- pilot.result$theta
+    gradInf <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
+                        pilot.theta[(length(beta) + 1):length(pilot.theta)])
+    
+    mMSE.ssp <- apply(abs(solve(gradInf$info) %*%
+                            t(gradInf$grad_each)), 2, sum)
+    mMSE.ssp <- mMSE.ssp/sum(mMSE.ssp)
+    mMSE.idx <- sample(1:n, r[i], replace = T, prob = mMSE.ssp)
+    
+    # combined
+    mMSE.y <- y[c(mMSE.idx, pilot.result$idx)]
+    mMSE.x <- x[c(mMSE.idx, pilot.result$idx)]
+    mMSE.g <- g[c(mMSE.idx, pilot.result$idx)]
+    mMSE.ssp.star <- c(mMSE.ssp[mMSE.idx], pilot.result$ssp)
+    
+    mMSE.theta.boot[j, ] <- coef(glm.cmp(mMSE.y ~ mMSE.x, mMSE.y ~ mMSE.g,
+                                         weights = 1/mMSE.ssp.star))
+    
+  }
+  
+  mMSE.mse.beta[i] <- mean(apply((mMSE.theta.boot[, 1:length(beta)] -
+                                    matrix(rep(theta.mle[1:length(beta)], S),nrow = S, byrow = T))^2,
+                                 1, sum))
+  mMSE.mse.gam[i] <- mean(apply((mMSE.theta.boot[, (length(beta)+1):length(theta.mle)] -
+                                   matrix(rep(theta.mle[(length(beta)+1):length(theta.mle)], S),nrow = S, byrow = T))^2,
+                                1, sum))
+  
+  mMSE.mse[i] <- mean(apply((mMSE.theta.boot -
+                               matrix(rep(theta.mle, S),nrow = S, byrow = T))^2,
+                            1, sum))
+  
+  
+}
+
+# plot(r, mMSE.mse.beta, type = 'l', ylim = c(0, 1))
+# plot(r, mMSE.mse.gam, type = 'l', ylim = c(0, 1))
+# plot(r, mMSE.mse, type = 'l', ylim = c(0, 1))
+
+# b.3 mVC
+mVC.mse.beta <- rep(NA, length(r))
+mVC.mse.gam <- rep(NA, length(r))
+mVC.mse <- rep(NA, length(r))
+
+
+for(i in 1:length(r)){
+  
+  mVC.theta.boot <- matrix(NA, nrow = S, ncol = length(beta) + length(gam))
+  
+  for(j in 1:S){
+    
+    pilot.result <- pilot(x, g, y, r0)
+    
+    pilot.theta <- pilot.result$theta
+    grad <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
+                     pilot.theta[(length(beta) + 1):length(pilot.theta)], gradOnly = T)
+    
+    mVC.ssp <- apply(abs(grad$grad_each), 1, sum)
+    mVC.ssp <- mVC.ssp/sum(mVC.ssp)
+    mVC.idx <- sample(1:n, r[i], replace = T, prob = mVC.ssp)
+    
+    # combined
+    mVC.y <- y[c(mVC.idx, pilot.result$idx)]
+    mVC.x <- x[c(mVC.idx, pilot.result$idx)]
+    mVC.g <- g[c(mVC.idx, pilot.result$idx)]
+    mVC.ssp.star <- c(mVC.ssp[mVC.idx], pilot.result$ssp)
+    
+    mVC.theta.boot[j, ] <- coef(glm.cmp(mVC.y ~ mVC.x, mVC.y ~ mVC.g,
+                                        weights = 1/mVC.ssp.star))
+    
+  }
+  
+  mVC.mse.beta[i] <- mean(apply((mVC.theta.boot[, 1:length(beta)] -
+                                   matrix(rep(theta.mle[1:length(beta)], S),nrow = S, byrow = T))^2,
+                                1, sum))
+  mVC.mse.gam[i] <- mean(apply((mVC.theta.boot[, (length(beta)+1):length(theta.mle)] -
+                                  matrix(rep(theta.mle[(length(beta)+1):length(theta.mle)], S),nrow = S, byrow = T))^2,
+                               1, sum))
+  
+  mVC.mse[i] <- mean(apply((mVC.theta.boot -
+                              matrix(rep(theta.mle, S),nrow = S, byrow = T))^2,
+                           1, sum))
+  
+}
+
+plot(r, mVC.mse.beta, type = 'l', ylim = c(0, 1))
+plot(r, mVC.mse.gam, type = 'l', ylim = c(0, 1))
+plot(r, mVC.mse, type = 'l', ylim = c(0, 1))
+
+
+
+
+
 
 
 
