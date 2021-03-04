@@ -1,4 +1,6 @@
-# setwd("D:\\GitHub\\sub-sampling\\COM-Poisson\\cdoe")
+# remove.packages('COMPoissonReg')
+# .rs.restartR()
+# setwd("C:\\Users\\gaw19004\\Documents\\GitHub\\sub-sampling\\COM-Poisson\\cdoe")
 # install.packages("COMPoissonReg_0.7.0.tar.gz", repos = NULL, type="source")
 library(COMPoissonReg)
 
@@ -9,7 +11,7 @@ x <- rnorm(n, 0, 0.5)
 beta <- c(0, 2)
 lam <- exp(cbind(1, x) %*% beta)
 
-g <- rnorm(n, -1, 1)
+g <- rnorm(n, 1, 1.5)
 gam <- c(1, 0.5)
 nu <- exp(cbind(1, g) %*% gam)
 
@@ -207,8 +209,11 @@ pilot <- function(x, g, y, r0){
   pilot.g <- g[pilot.idx]
   pilot.ssp.star <- rep(1/r0, r0)
   
+  w <- 1/pilot.ssp.star
+  w <- r0*w/sum(w)
+  
   fit.pilot <- glm.cmp(pilot.y ~ pilot.x, pilot.y ~ pilot.g,
-                       weights = 1/pilot.ssp.star)
+                       weights = w)
   
   return(list(theta = coef(fit.pilot),
               ssp = pilot.ssp.star,
@@ -219,7 +224,7 @@ pilot <- function(x, g, y, r0){
 }
 
 ############################
-S <- 1000
+S <- 500
 fit.mle <- glm.cmp(y ~ x, y ~ g)
 theta.mle <- coef(fit.mle)
 
@@ -248,7 +253,7 @@ full.mse <- mean(apply((full.theta.boot -
 ## (b) different SSPs
 r0 <- 200
 # r <- c(100, 200, 300, 500, 700, 1000)
-r <- c(100, 200, 300)
+r <- c(100, 200, 300, 500, 700, 1000)
 # b.1 uniform
 
 unif.mse.beta <- rep(NA, length(r))
@@ -260,14 +265,28 @@ for(i in 1:length(r)){
   unif.theta.boot <- matrix(NA, nrow = S, ncol = length(beta) + length(gam))
   
   for(j in 1:S){
-    unif.idx <- sample(1:n, unif.r.total, replace = T)
-    unif.y <- y[unif.idx]
-    unif.x <- x[unif.idx]
-    unif.g <- g[unif.idx]
+    boolFalse<-F
+    while(boolFalse==F)
+    {
+      tryCatch({
+        print(j)
+        unif.idx <- sample(1:n, unif.r.total, replace = T)
+        unif.y <- y[unif.idx]
+        unif.x <- x[unif.idx]
+        unif.g <- g[unif.idx]
+        
+        unif.ssp <- 1/unif.r.total
+        w <- rep(1/unif.ssp, unif.r.total)
+        w <- unif.r.total*w/sum(w)
+        
+        
+        unif.theta.boot[j, ] <- coef(glm.cmp(unif.y ~ unif.x, unif.y ~ unif.g,
+                                             weights = w))
+        boolFalse<-T
+      },error=function(e){
+      },finally={})
+    }
     
-    unif.ssp <- 1/unif.r.total
-    unif.theta.boot[j, ] <- coef(glm.cmp(unif.y ~ unif.x, unif.y ~ unif.g,
-                                         weights = 1/unif.ssp))
   }
   
   unif.mse.beta[i] <- mean(apply((unif.theta.boot[, 1:length(beta)] -
@@ -282,9 +301,9 @@ for(i in 1:length(r)){
                             1, sum))
 }
 
-# plot(r, unif.mse.beta, type = 'l', ylim = c(0, 1))
-# plot(r, unif.mse.gam, type = 'l', ylim = c(0, 1))
-# plot(r, unif.mse, type = 'l', ylim = c(0, 1))
+plot(r, unif.mse.beta, type = 'l')
+plot(r, unif.mse.gam, type = 'l')
+plot(r, unif.mse, type = 'l')
 
 # b.2 mMSE
 mMSE.mse.beta <- rep(NA, length(r))
@@ -297,25 +316,37 @@ for(i in 1:length(r)){
   
   for(j in 1:S){
     
-    pilot.result <- pilot(x, g, y, r0)
-    
-    pilot.theta <- pilot.result$theta
-    gradInf <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
-                        pilot.theta[(length(beta) + 1):length(pilot.theta)])
-    
-    mMSE.ssp <- apply(abs(solve(gradInf$info) %*%
-                            t(gradInf$grad_each)), 2, sum)
-    mMSE.ssp <- mMSE.ssp/sum(mMSE.ssp)
-    mMSE.idx <- sample(1:n, r[i], replace = T, prob = mMSE.ssp)
-    
-    # combined
-    mMSE.y <- y[c(mMSE.idx, pilot.result$idx)]
-    mMSE.x <- x[c(mMSE.idx, pilot.result$idx)]
-    mMSE.g <- g[c(mMSE.idx, pilot.result$idx)]
-    mMSE.ssp.star <- c(mMSE.ssp[mMSE.idx], pilot.result$ssp)
-    
-    mMSE.theta.boot[j, ] <- coef(glm.cmp(mMSE.y ~ mMSE.x, mMSE.y ~ mMSE.g,
-                                         weights = 1/mMSE.ssp.star))
+    boolFalse<-F
+    while(boolFalse==F)
+    {
+      tryCatch({
+        print(j)
+        pilot.result <- pilot(x, g, y, r0)
+        
+        pilot.theta <- pilot.result$theta
+        gradInf <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
+                            pilot.theta[(length(beta) + 1):length(pilot.theta)])
+        
+        mMSE.ssp <- apply(abs(solve(gradInf$info) %*%
+                                t(gradInf$grad_each)), 2, sum)
+        mMSE.ssp <- mMSE.ssp/sum(mMSE.ssp)
+        mMSE.idx <- sample(1:n, r[i], replace = T, prob = mMSE.ssp)
+        
+        # combined
+        mMSE.y <- y[c(mMSE.idx, pilot.result$idx)]
+        mMSE.x <- x[c(mMSE.idx, pilot.result$idx)]
+        mMSE.g <- g[c(mMSE.idx, pilot.result$idx)]
+        mMSE.ssp.star <- c(mMSE.ssp[mMSE.idx], pilot.result$ssp)
+        
+        w <- 1/mMSE.ssp.star
+        w <- (r[i]+r0)*w/sum(w)
+        
+        mMSE.theta.boot[j, ] <- coef(glm.cmp(mMSE.y ~ mMSE.x, mMSE.y ~ mMSE.g,
+                                             weights = w))
+        boolFalse<-T
+      },error=function(e){
+      },finally={})
+    }
     
   }
   
@@ -333,9 +364,9 @@ for(i in 1:length(r)){
   
 }
 
-# plot(r, mMSE.mse.beta, type = 'l', ylim = c(0, 1))
-# plot(r, mMSE.mse.gam, type = 'l', ylim = c(0, 1))
-# plot(r, mMSE.mse, type = 'l', ylim = c(0, 1))
+plot(r, mMSE.mse.beta, type = 'l')
+plot(r, mMSE.mse.gam, type = 'l')
+plot(r, mMSE.mse, type = 'l')
 
 # b.3 mVC
 mVC.mse.beta <- rep(NA, length(r))
@@ -349,24 +380,35 @@ for(i in 1:length(r)){
   
   for(j in 1:S){
     
-    pilot.result <- pilot(x, g, y, r0)
-    
-    pilot.theta <- pilot.result$theta
-    grad <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
-                     pilot.theta[(length(beta) + 1):length(pilot.theta)], gradOnly = T)
-    
-    mVC.ssp <- apply(abs(grad$grad_each), 1, sum)
-    mVC.ssp <- mVC.ssp/sum(mVC.ssp)
-    mVC.idx <- sample(1:n, r[i], replace = T, prob = mVC.ssp)
-    
-    # combined
-    mVC.y <- y[c(mVC.idx, pilot.result$idx)]
-    mVC.x <- x[c(mVC.idx, pilot.result$idx)]
-    mVC.g <- g[c(mVC.idx, pilot.result$idx)]
-    mVC.ssp.star <- c(mVC.ssp[mVC.idx], pilot.result$ssp)
-    
-    mVC.theta.boot[j, ] <- coef(glm.cmp(mVC.y ~ mVC.x, mVC.y ~ mVC.g,
-                                        weights = 1/mVC.ssp.star))
+    boolFalse<-F
+    while(boolFalse==F)
+    {
+      tryCatch({
+        print(j)
+        pilot.result <- pilot(x, g, y, r0)
+        
+        pilot.theta <- pilot.result$theta
+        grad <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
+                         pilot.theta[(length(beta) + 1):length(pilot.theta)], gradOnly = T)
+        
+        mVC.ssp <- apply(abs(grad$grad_each), 1, sum)
+        mVC.ssp <- mVC.ssp/sum(mVC.ssp)
+        mVC.idx <- sample(1:n, r[i], replace = T, prob = mVC.ssp)
+        
+        # combined
+        mVC.y <- y[c(mVC.idx, pilot.result$idx)]
+        mVC.x <- x[c(mVC.idx, pilot.result$idx)]
+        mVC.g <- g[c(mVC.idx, pilot.result$idx)]
+        mVC.ssp.star <- c(mVC.ssp[mVC.idx], pilot.result$ssp)
+        
+        w <- 1/mVC.ssp.star
+        w <- (r[i]+r0)*w/sum(w)
+        mVC.theta.boot[j, ] <- coef(glm.cmp(mVC.y ~ mVC.x, mVC.y ~ mVC.g,
+                                            weights = w))
+        boolFalse<-T
+      },error=function(e){
+      },finally={})
+    }
     
   }
   
@@ -389,15 +431,42 @@ plot(r, mVC.mse, type = 'l', ylim = c(0, 1))
 
 
 
+plot(r, unif.mse, type = 'b', ylim = c(0, 0.35),
+     col = 1, pch = "1", lwd = 2,
+     main = 'theta', ylab = 'MSE')
+lines(r, mMSE.mse, type = 'b', col = 2, pch = "2", lwd = 2)
+lines(r, mVC.mse, type = 'b', col = 3, pch = "3", lwd = 2)
+abline(h = full.mse, lty = 2, lwd = 2, col = 1)
+legend('topright', lwd = 2,
+       lty = c(rep(1, 3), 2), col = c(1:3, 1),
+       pch = c(as.character(1:3), NA),
+       legend = c('uniform', 'mMSE', 'mVc', 'full'))
+
+plot(r, unif.mse.beta, type = 'b', ylim = c(0, 0.3),
+     col = 1, pch = "1", lwd = 2,
+     main = 'beta', ylab = 'MSE')
+lines(r, mMSE.mse.beta, type = 'b', col = 2, pch = "2", lwd = 2)
+lines(r, mVC.mse.beta, type = 'b', col = 3, pch = "3", lwd = 2)
+abline(h = full.mse.beta, lty = 2, lwd = 2, col = 1)
+legend('topright', lwd = 2,
+       lty = c(rep(1, 3), 2), col = c(1:3, 1),
+       pch = c(as.character(1:3), NA),
+       legend = c('uniform', 'mMSE', 'mVc', 'full'))
 
 
+plot(r, unif.mse.gam, type = 'b', ylim = c(0, 0.07),
+     col = 1, pch = "1", lwd = 2,
+     main = 'gam', ylab = 'MSE')
+lines(r, mMSE.mse.gam, type = 'b', col = 2, pch = "2", lwd = 2)
+lines(r, mVC.mse.gam, type = 'b', col = 3, pch = "3", lwd = 2)
+abline(h = full.mse.gam, lty = 2, lwd = 2, col = 1)
+legend('topright', lwd = 2,
+       lty = c(rep(1, 3), 2), col = c(1:3, 1),
+       pch = c(as.character(1:3), NA),
+       legend = c('uniform', 'mMSE', 'mVc', 'full'))
 
 
-
-
-
-
-
+save.image(file = 'comResults.RData')
 
 
 
