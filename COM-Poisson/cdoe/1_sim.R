@@ -59,7 +59,8 @@ fitted1 <- predict(fit1, newdata = data.frame(x = x, g = g),
 fitted2 <- predict(fit2, newdata = data.frame(x = x, g = g))
 fitted3 <- predict(fit3, newdata = data.frame(x = x, g = g))
 
-
+png('D:\\GitHub\\sub-sampling\\\\COM-Poisson\\cdoe\\mean.png',
+    width = 600,height = 600, res = 100)
 plot(y, col = 1, pch = 1, main = 'mean')
 lines(fitted1, col = 2, pch = 2, type = 'p')
 lines(fitted2, col = 3, pch = 3, type = 'p')
@@ -68,6 +69,8 @@ legend('topleft', legend = c('obs.', 'Poisson',
                              'CMP-constant nu',
                              'CMP-model nu'),
        pch = 1:4, col = 1:4)
+dev.off()
+
 
 mean((y - fitted1)^2)
 mean((y - fitted2)^2)
@@ -84,6 +87,8 @@ predict.cmp.quantile <- function(q, fit, X){
   return(out)
 }
 
+png('D:\\GitHub\\sub-sampling\\\\COM-Poisson\\cdoe\\median.png',
+    width = 600,height = 600, res = 100)
 plot(y, col = 1, pch = 1, main = 'median')
 lines(qpois(rep(0.5, n), fit1$fitted.values),
       type = 'p', col = 2, pch = 2)
@@ -95,6 +100,8 @@ legend('topleft', legend = c('obs.', 'Poisson',
                              'CMP-constant nu',
                              'CMP-model nu'),
        pch = 1:4, col = 1:4)
+dev.off()
+
 
 mean((y - qpois(0.5, fit1$fitted.values))^2)
 mean((y - predict.cmp.quantile(0.5, fit2, cbind(1, x)))^2)
@@ -430,7 +437,8 @@ plot(r, mVC.mse.gam, type = 'l', ylim = c(0, 1))
 plot(r, mVC.mse, type = 'l', ylim = c(0, 1))
 
 
-
+png('D:\\GitHub\\sub-sampling\\\\COM-Poisson\\cdoe\\theta.png',
+    width = 600,height = 600, res = 100)
 plot(r, unif.mse, type = 'b', ylim = c(0, 0.35),
      col = 1, pch = "1", lwd = 2,
      main = 'theta', ylab = 'MSE')
@@ -441,7 +449,10 @@ legend('topright', lwd = 2,
        lty = c(rep(1, 3), 2), col = c(1:3, 1),
        pch = c(as.character(1:3), NA),
        legend = c('uniform', 'mMSE', 'mVc', 'full'))
+dev.off()
 
+png('D:\\GitHub\\sub-sampling\\\\COM-Poisson\\cdoe\\beta.png',
+    width = 600,height = 600, res = 100)
 plot(r, unif.mse.beta, type = 'b', ylim = c(0, 0.3),
      col = 1, pch = "1", lwd = 2,
      main = 'beta', ylab = 'MSE')
@@ -452,11 +463,13 @@ legend('topright', lwd = 2,
        lty = c(rep(1, 3), 2), col = c(1:3, 1),
        pch = c(as.character(1:3), NA),
        legend = c('uniform', 'mMSE', 'mVc', 'full'))
+dev.off()
 
-
+png('D:\\GitHub\\sub-sampling\\\\COM-Poisson\\cdoe\\gamma.png',
+    width = 600,height = 600, res = 100)
 plot(r, unif.mse.gam, type = 'b', ylim = c(0, 0.07),
      col = 1, pch = "1", lwd = 2,
-     main = 'gam', ylab = 'MSE')
+     main = 'gamma', ylab = 'MSE')
 lines(r, mMSE.mse.gam, type = 'b', col = 2, pch = "2", lwd = 2)
 lines(r, mVC.mse.gam, type = 'b', col = 3, pch = "3", lwd = 2)
 abline(h = full.mse.gam, lty = 2, lwd = 2, col = 1)
@@ -464,7 +477,7 @@ legend('topright', lwd = 2,
        lty = c(rep(1, 3), 2), col = c(1:3, 1),
        pch = c(as.character(1:3), NA),
        legend = c('uniform', 'mMSE', 'mVc', 'full'))
-
+dev.off()
 
 save.image(file = 'comResults.RData')
 

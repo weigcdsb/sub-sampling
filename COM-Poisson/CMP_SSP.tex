@@ -1,5 +1,30 @@
 \documentclass[]{article}
 \usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+	language=R,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	numberstyle=\tiny\color{gray},
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{mauve},
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=3
+}
+
 \title{A Template}
 \begin{document}
 	
@@ -10,16 +35,7 @@ The p.m.f. for Conway-Maxwell Poisson (CMP) is:
 \end{equation*}
 $Z(\lambda, \nu) = Z$ is the normalization constant, i.e. $Z(\lambda, \nu) = Z = \sum_{y=0}^{\infty}\frac{\lambda^{y}}{(y!)^{\nu}}$, which doesn't have closed form in general. The domain for parameters is $\lambda, \nu > 0$ and $0 < \lambda < 1, \nu = 0$. The parameter $\nu$ controls the dispersion: 1) when $\nu = 1$, the CMP is Poisson distribution, 2) when $\nu < 1$, the distribution is over-dispersed and 3) when $\nu > 1$, the distribution is under-dispersed. When $\nu\to\infty$, the CMP approaches a Bernoulli distribution, while $\nu=0$, it reduces to a geometric distribution.\\
 \\
-In neuroscience, modeling dispersion is nearly as important as modeling mean, and both under-and over-dispersion are common. Therefore, I will consider modeling parameters by 2 linear models, i.e. $log(\lambda) = \boldsymbol{x}'\boldsymbol{\beta}$ and $log(\nu) = \boldsymbol{g}'\boldsymbol{\gamma}$, in this manuscript. To write things more compactly, define $\boldsymbol{\theta}' = (\boldsymbol{\beta}', \boldsymbol{\gamma}')$, then:
-\begin{equation*}
-	\begin{pmatrix} log(\lambda)\\ log(\nu) \end{pmatrix} =
-	\begin{pmatrix}
-		\boldsymbol{x}' & \boldsymbol{0}'\\
-		\boldsymbol{0}' & \boldsymbol{g}'
-	\end{pmatrix}\begin{pmatrix}
-	\boldsymbol{\beta} \\ \boldsymbol{\gamma}
-\end{pmatrix}
-\end{equation*}
+To model the mean and dispersion simultaneously, two linear models are used for parameters $\lambda$ and $\nu$, i.e. $\log(\lambda) = \boldsymbol{x}'\boldsymbol{\beta}$ and $\log(\nu) = \boldsymbol{g}'\boldsymbol{\gamma}$, in this manuscript, I further define $\boldsymbol{\theta}' = (\boldsymbol{\beta}', \boldsymbol{\gamma}')$.\\
 \\
 To derive the SSP for CMP regression, the keys are gradient and Hessian for log-likelihood. In the following part of this section, I will define some notations and give some necessary properties for CMP.\\
 \\
@@ -42,13 +58,14 @@ And the Hessian for $l_i$ (w.r.t $\boldsymbol{\eta}_i$) is:
 	\end{pmatrix}
 \end{equation*}
 
-The $E(Y_i)$, $Var(Y_i)$, $E(log(Y_i!))$, $Var(log(Y_i!))$ and $Cov(Y_i, log(Y_i!))$ can be evaluated numerically. For example, $E(Y_i) = \frac{1}{Z_i}\sum_{y=0}^{\infty}\frac{y(\lambda_i)^y}{(y!)^{\nu_i}}$. When $\nu_i \leq 1$ or $\lambda_i > 10^{\nu_i}$, these moments can be approximated well, for example $E(Y_i) \approx \lambda_i^{1/\nu_i} - \frac{\nu_i - 1}{2\nu_i}$.\\
+The moments $E(Y_i)$, $Var(Y_i)$, $E(log(Y_i!))$, $Var(log(Y_i!))$ and $Cov(Y_i, log(Y_i!))$ by using the following approximation for normalizing constant $Z_i$:
+\begin{equation*}
+	Z_i = \frac{e^{\nu_i \lambda_i^{1/\nu_i}}}{\lambda_i^{\frac{\nu_i-1}{2\nu_i}}}\left(1 + c_1(\nu_i \lambda_i^{1/\nu_i})^{-1} + c_2(\nu_i \lambda_i^{1/nu_i})^{-2} + \mathcal{O}(\lambda_i^{\frac{-3}{\nu_i}})\right)
+\end{equation*}
+
+The approximation works well when $\lambda_i \geq 2$ and $\nu_i \leq 1$, and this can be helpful when updating/ calculating the gradient and hessian matrix.\\
 \\
-However, these conditions are not held for neuroscience. In neuroscience, the observations are usually in the scale of milliseconds. When there's no information input, the observations are pretty sparse (therefore previously some researchers suggested to use zero-inflated Poisson). But when there's information inputs, the observation will usually produce a peak. In other words, $\lambda_i$ is usually very small. Moreover, both over- and under-dispersion are common. But that make numerical summation easy, since $\lambda$ is small while $\nu$ is not very small, the numerical approximation can be done in a few steps.\\ 
-\\
-Note that $\frac{\partial log(\lambda_i)}{\partial\boldsymbol{\theta}} = \begin{pmatrix}
-	\boldsymbol{x_i}\\ \boldsymbol{0}
-\end{pmatrix}$ and $\frac{\partial \nu_i}{\partial\boldsymbol{\theta}} = \nu_i\frac{\partial log(\nu_i)}{\partial\boldsymbol{\theta}} = \begin{pmatrix} \boldsymbol{0}\\ \nu_i\boldsymbol{g_i} \end{pmatrix}$. Therefore, the gradient for $l_i$ (w.r.t $\boldsymbol{\theta}$) is:
+If we use models $\log(\lambda_i) = \boldsymbol{x_i}'\boldsymbol{\beta}$ and $\log(\nu_i) = \boldsymbol{g_i}'\boldsymbol{\gamma}$, by using chain rule, the gradient for $l_i$ (w.r.t $\boldsymbol{\theta}$) is:
 \begin{equation*}
 	\frac{\partial l_i}{\partial \boldsymbol{\theta}} = 
 	 = \begin{pmatrix} [y_i - E(Y_i)]\boldsymbol{x_i}\\
@@ -66,121 +83,110 @@ And the Hessian for $l_i$ (w.r.t $\boldsymbol{\theta}$) is:
 \end{equation*}
 
 \section{SSP for CMP}
-Denote subsample size as $r$, with subsampling probabilities $\pi_i$ for all dta points. Denote  the covariates in the subsample as $\boldsymbol{x}_i^*$ and $\boldsymbol{g}_i^*$, while responses and subsampling probabilities in the subsample as $y_i^*$ and $\pi_i^*$. Denote the weighted log-likelihood as:
-\begin{equation*}
-	l^*(\boldsymbol{\theta}) = \frac{1}{r}\sum_{i=1}^{r}\frac{1}{\pi_i^*}[y_i^* log(\lambda_i(\boldsymbol{\theta})) - log(y_i^*!)\nu_i(\boldsymbol{\theta}) - log(Z_i(\boldsymbol{\theta}))]
-\end{equation*}
-
-To simplify notations, denote $E(Y_i | \boldsymbol{x_i^*}, \boldsymbol{g_i^*}, \boldsymbol{\theta}) = E^*(Y_i| \boldsymbol{\theta})$ and $E(Y_i | \boldsymbol{x_i}, \boldsymbol{g_i}, \boldsymbol{\theta}) = E(Y_i| \boldsymbol{\theta})$. Similar for $E(log(Y_i!))$, $Var(Y_i)$, $Var(log(Y_i!))$ and $Cov(Y_i, log(Y_i!))$
+By denoting $a_i = [y_i - E(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]$ and $b_i = 	\nu_i(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i!)]$, we define 
+$$\boldsymbol{V}_c = \frac{1}{rn^2}\sum_{i=1}^{n}\frac{1}{\pi_i}\begin{pmatrix}
+	a_i^2\boldsymbol{x_i}\boldsymbol{x_i}' &
+	a_i b_i\boldsymbol{x_i}\boldsymbol{g_i}'\\
+	a_i b_i\boldsymbol{g_i}\boldsymbol{x_i}' &
+	b_i^2\boldsymbol{g_i}\boldsymbol{g_i}'
+\end{pmatrix}$$
+where $r$ is the subsample size, with subsampling probabilities $\pi_i$ for all data points.\\
 \\
-Note that
-\begin{equation*}
-	\frac{1}{n}\frac{\partial l^*(\hat{\boldsymbol{\theta}}_{MLE})}{\partial\hat{\boldsymbol{\theta}}_{MLE}} = \frac{1}{r}\sum_{i=1}^{r}\frac{1}{n\pi_i^*}\begin{pmatrix} [y_i^* - E^*(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x_i^*}\\
-		\nu_i^*(\hat{\boldsymbol{\theta}}_{MLE})[E^*(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i^*!)]\boldsymbol{g_i^*}
-	\end{pmatrix} = \frac{1}{r}\sum_{i=1}^{r}\boldsymbol{\zeta}_i
-\end{equation*}
-\\
-Let $a = [y_i - E(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]$ and $b = 	\nu_i(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i!)]$. \\
-\\
-Given the full data matrix $\mathcal{F}_n = (\boldsymbol{X}, \boldsymbol{y})$, $\boldsymbol{\zeta}_1$, ... $\boldsymbol{\zeta}_n$ are i.i.d, with mean $\boldsymbol{0}$ and variance:
-\begin{equation*}
-	Var(\boldsymbol{\zeta}_i|\mathcal{F}_n) = r\boldsymbol{V}_c = \frac{1}{n^2}\sum_{i=1}^{n}\frac{1}{\pi_i}\begin{pmatrix}
-		a^2\boldsymbol{x_i}\boldsymbol{x_i}' &
-		ab\boldsymbol{x_i}\boldsymbol{g_i}'\\
-		ba\boldsymbol{g_i}\boldsymbol{x_i}' &
-		b^2\boldsymbol{g_i}\boldsymbol{g_i}'
-	\end{pmatrix}
-\end{equation*}
-where $\boldsymbol{V}_c = \frac{1}{rn^2}\sum_{i=1}^{n}\frac{1}{\pi_i}\begin{pmatrix}
-	a^2\boldsymbol{x_i}\boldsymbol{x_i}' &
-	ab\boldsymbol{x_i}\boldsymbol{g_i}'\\
-	ba\boldsymbol{g_i}\boldsymbol{x_i}' &
-	b^2\boldsymbol{g_i}\boldsymbol{g_i}'
-\end{pmatrix}$.
-Follow the same steps in OSMAC, 
-$$
-\frac{1}{n}\boldsymbol{V}_c^{-1/2}\frac{\partial l^*(\hat{\boldsymbol{\theta}}_{MLE})}{\partial\hat{\boldsymbol{\theta}}_{MLE}} \to N(0, \boldsymbol{I})
-$$
-Denote
+Further we denote the observed information matrix as
 $$
 \boldsymbol{M}_X = \frac{1}{n}\sum_{i=1}^{n}\begin{pmatrix}
-	A & B\\
-	C & D
+	A_i & B_i\\
+	B_i^{'} & C_i
 \end{pmatrix}
 $$
 where
 \begin{align*}
-	A &= Var(Y_i|\hat{\boldsymbol{\theta}}_{MLE})\boldsymbol{x_i}\boldsymbol{x_i}'\\
-	B &= -\nu_i(\hat{\boldsymbol{\theta}}_{MLE}) Cov(Y_i, log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE})\boldsymbol{x_i}\boldsymbol{g_i}'\\
-	C &= -\nu_i(\hat{\boldsymbol{\theta}}_{MLE}) Cov(Y_i, log(Y_i!)|\hat{\boldsymbol{\theta}}_{MLE})\boldsymbol{g_i}\boldsymbol{x_i}'\\
-	D &= \nu_i(\hat{\boldsymbol{\theta}}_{MLE})[\nu_i(\hat{\boldsymbol{\theta}}_{MLE}) Var(log(Y_i!|\hat{\boldsymbol{\theta}}_{MLE}) - E(log(Y_i!|\hat{\boldsymbol{\theta}}_{MLE})) + log(y_i!))]\boldsymbol{g_i}\boldsymbol{g_i}'
+	A_i &= Var(Y_i|\hat{\boldsymbol{\theta}}_{MLE})\boldsymbol{x_i}\boldsymbol{x_i}'\\
+	B_i &= -\nu_i(\hat{\boldsymbol{\theta}}_{MLE}) Cov(Y_i, log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE})\boldsymbol{x_i}\boldsymbol{g_i}'\\
+	C_i &= \nu_i(\hat{\boldsymbol{\theta}}_{MLE})[\nu_i(\hat{\boldsymbol{\theta}}_{MLE}) Var(log(Y_i!|\hat{\boldsymbol{\theta}}_{MLE}) - E(log(Y_i!|\hat{\boldsymbol{\theta}}_{MLE})) + log(y_i!))]\boldsymbol{g_i}\boldsymbol{g_i}'
 \end{align*}
-\\
-(Since $\boldsymbol{M}_X$ converges to Fisher information matrix, we may replace $D$ with $D* = \nu_i(\hat{\boldsymbol{\theta}}_{MLE})^2Var(log(Y_i!|\hat{\boldsymbol{\theta}}_{MLE})\boldsymbol{g_i}\boldsymbol{g_i}'$). Since $D*$ doesn't include $log(y_i!)$, it will be more robust to the outliers.)\\
-\\
-Still follow the same steps as in OSMAC, we can show that as $n \to \infty$ and $r \to \infty$, conditional on $\mathcal{F}_n$ in probability,
-$$
-\boldsymbol{V}^{-1/2}(\tilde{\boldsymbol{\theta}} - \hat{\boldsymbol{\theta}}) \to N(0, \boldsymbol{I})
-$$
-where $\boldsymbol{V} = \boldsymbol{M}_X^{-1}\boldsymbol{V}_c\boldsymbol{M}_X^{-1}$
-\\
 
-\subsection{SSP under A-optimality Criteiron}
+Then follow the same steps as in OSMAC, we can show that as $n \to \infty$ and $r \to \infty$, conditional on full data matrix $\mathcal{F}_n = \boldsymbol{X}, \boldsymbol{y}$ in probability,
+$$
+\boldsymbol{V}^{-1/2}(\tilde{\boldsymbol{\theta}} - \hat{\boldsymbol{\theta}}_{MLE}) \to N(0, \boldsymbol{I})
+$$
+where $\boldsymbol{V} = \boldsymbol{M}_X^{-1}\boldsymbol{V}_c\boldsymbol{M}_X^{-1}$ and $\tilde{\boldsymbol{\theta}}$ is the sub-sampling estimates for $\boldsymbol{\theta}$
+\\
+Then under A-optimality criterion, the sub-sampling probabilities (SSPs) $\pi_i^{mMSE}$ are proportional to $||\boldsymbol{M}_X^{-1}\begin{pmatrix}
+	a_i\boldsymbol{x}_i\\b_i\boldsymbol{g}_i
+\end{pmatrix}||$, while under L-optimality criterion, $\pi_i^{mVc} \propto ||\begin{pmatrix}
+a_i\boldsymbol{x}_i\\b_i\boldsymbol{g}_i
+\end{pmatrix}||$. In other words:
 \begin{align*}
-	tr(V) &= tr(\boldsymbol{M}_X^{-1}\boldsymbol{V}_c\boldsymbol{M}_X^{-1})\\
-	&=\frac{1}{rn^2}\sum_{i=1}^{n}\frac{1}{\pi_i}tr(\boldsymbol{M}_X^{-1}\begin{pmatrix}
-		a^2\boldsymbol{x_i}\boldsymbol{x_i}' &
-		ab\boldsymbol{x_i}\boldsymbol{g_i}'\\
-		ba\boldsymbol{g_i}\boldsymbol{x_i}' &
-		b^2\boldsymbol{g_i}\boldsymbol{g_i}'
-	\end{pmatrix}\boldsymbol{M}_X^{-1})\\
-	&=\frac{1}{rn^2}[\sum_{i=1}^{n}\pi_i][\sum_{i=1}^{n}\frac{1}{\pi_i}||\boldsymbol{M}_X^{-1}\begin{pmatrix}
-		a\boldsymbol{x}_i\\b\boldsymbol{g}_i
-	\end{pmatrix}||^2]\\
-	&\geq\frac{1}{rn^2}[\sum_{i=1}^{n}||\boldsymbol{M}_X^{-1}\begin{pmatrix}
-		a\boldsymbol{x}_i\\b\boldsymbol{g}_i
-	\end{pmatrix}||]^2
+	\pi_i^{mMSE} &= \frac{||\boldsymbol{M}_X^{-1}\begin{pmatrix}
+			[y_i - E(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_i\\
+			\nu_i(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i!)]\boldsymbol{g}_i
+		\end{pmatrix}||}{\sum_{j=1}^{n}||\boldsymbol{M}_X^{-1}\begin{pmatrix}
+			[y_j - E(Y_j| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_j\\
+			\nu_j(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_j!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_j!)]\boldsymbol{g}_j
+		\end{pmatrix}||}\\
+	\pi_i^{mVc} &= \frac{||\begin{pmatrix}
+			[y_i - E(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_i\\
+			\nu_i(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i!)]\boldsymbol{g}_i
+		\end{pmatrix}||}{\sum_{j=1}^{n}||\begin{pmatrix}
+			[y_j - E(Y_j| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_j\\
+			\nu_j(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_j!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_j!)]\boldsymbol{g}_j
+		\end{pmatrix}||}
 \end{align*}
-By equality condition for Cauchy-Schwartz inequality, $\pi_i \propto  ||\boldsymbol{M}_X^{-1}\begin{pmatrix}
-	a\boldsymbol{x}_i\\b\boldsymbol{g}_i
-\end{pmatrix}|| =||\boldsymbol{M}_X^{-1}\begin{pmatrix}
-	[y_i - E(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_i\\
-	\nu_i(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i!)]\boldsymbol{g}_i
-\end{pmatrix}||$
-So, the SSP is:
-$$
-\pi_i^{mMSE} = \frac{||\boldsymbol{M}_X^{-1}\begin{pmatrix}
-		[y_i - E(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_i\\
-		\nu_i(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i!)]\boldsymbol{g}_i
-	\end{pmatrix}||}{\sum_{j=1}^{n}||\boldsymbol{M}_X^{-1}\begin{pmatrix}
-	[y_j - E(Y_j| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_j\\
-	\nu_j(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_j!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_j!)]\boldsymbol{g}_j
-\end{pmatrix}||}
-$$
 
-\subsection{SSP under L-optimality Criteiron}
+\section{Necessity for fitting CMP model}
+Here I first generate the data by CMP distribution.\\
+\\
+There are $n = 10000$ independent observations, with $Y_i \sim CMP(\lambda_i, \nu_i)$ for $i = 1, 2,..., n$. The $\lambda_i$ and $\nu_i$ are modeled as:
 \begin{align*}
-	tr(\boldsymbol{V}_c) &=\frac{1}{rn^2}[\sum_{i=1}^{n}\pi_i][\sum_{i=1}^{n}\frac{1}{\pi_i}||\begin{pmatrix}
-		a\boldsymbol{x}_i\\b\boldsymbol{g}_i
-	\end{pmatrix}||^2]\\
-	&\geq \frac{1}{rn^2}[\sum_{i=1}^{n}||\begin{pmatrix}
-		a\boldsymbol{x}_i\\b\boldsymbol{g}_i
-	\end{pmatrix}||]^2
+	\lambda_i &= \exp(2x_{i1})\\
+	\nu_i &= \exp(1 + 0.5g_{i1})
 \end{align*}
-By equality condition for Cauchy-Schwartz inequality, $\pi_i \propto ||\begin{pmatrix}
-	[y_i - E(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_i\\
-	\nu_i(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i!)]\boldsymbol{g}_i
-\end{pmatrix}||$
-So, the SSP is:
-$$
-\pi_i^{mVc} = \frac{||\begin{pmatrix}
-		[y_i - E(Y_i| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_i\\
-		\nu_i(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_i!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_i!)]\boldsymbol{g}_i
-	\end{pmatrix}||}{\sum_{j=1}^{n}||\begin{pmatrix}
-		[y_j - E(Y_j| \hat{\boldsymbol{\theta}}_{MLE})]\boldsymbol{x}_j\\
-		\nu_j(\hat{\boldsymbol{\theta}}_{MLE})[E(log(Y_j!)| \hat{\boldsymbol{\theta}}_{MLE}) - log(y_j!)]\boldsymbol{g}_j
-	\end{pmatrix}||}
-$$
+where $x_{i1} \stackrel{i.i.d.}{\sim} N(0, 0.5^2)$ and $g_{i1} \stackrel{i.i.d.}{\sim} N(1, 1.5^2)$ The following two plots show the fitted mean and median for 1) Poisson regression, 2) CMP regression, with constant $\nu_i = \nu$ (constant CMP) and 3) CMP with $\nu_i$ modeled by $g_{i1}$ (full CMP).\\
+\graphicspath{{D:/GitHub/sub-sampling/COM-Poisson/cdoe/}}
+\includegraphics[width = .6\textwidth]{mean.png}
+\includegraphics[width = .6\textwidth]{median.png}
+The MSEs ($\frac{(Y_i - \bar{Y})^2}{n}$) for mean are 1) Poisson: 0.961, 2) constant CMP: 0.958 and 3) full CMP: 0.401. The Poisson model and constant dispersion CMP model are not good for handling extreme observations. Therefore, it's necessary to take dispersion into account and CMP is a good choice.\\
+\\
+The running time for these three: 1)Poisson: 0.07s, 2) constant CMP: 2.29 and 3) full CMP: 4.29. This shows that CMP regression is much more computational expensive than regular Poisson regression, which suggests the necessity of sub-sampling.
+
+\section{Sub-sampling in CMP}
+To fit the CMP regression model, although we can use regular Newton-Raphson method to maximize the likelihood, the information matrix may not be stable. Therefore (as far as I know), there are two methods to deal with that: 1) use direct optimization strategy, such as L-BFGS-B and 2) optimize $\boldsymbol{\beta}$ and $\boldsymbol{\gamma}$ in an alternative way, i.e. hold one part fixed when fitting another. The alternating method reduces the problem into a two-step Newton-Raphson/ IRWLS problem.\\
+\\
+Here I use the package implementing L-BFGS-B, and modify the objective likelihood function a bit to allow for optimization of weighted log-likelihood. To be more specific, I change:
+\begin{lstlisting}
+	sum(y*log(lambda) - nu*lgamma(y+1) - logz)
+\end{lstlisting} 
+to
+\begin{lstlisting}
+	sum(weights*(y*log(lambda) - nu*lgamma(y+1) - logz))
+\end{lstlisting} 
+The weights are normalized such that the summation of weights equals to sample size. Therefore, I can use the modified functions to maximizes the weighted likelihood.\\
+\\
+Then I use the bootstrap ($B = 500$) to calculate the MSE for $\boldsymbol{\beta}$, $\boldsymbol{\gamma}$ and the overall $\boldsymbol{\theta}$. Well...\\
+\includegraphics[width = .6\textwidth]{beta.png}
+\includegraphics[width = .6\textwidth]{gamma.png}
+\includegraphics[width = .6\textwidth]{theta.png}
+\\
+It seems that the gradient and hessian (numerically evaluated) is not stable, and the variations for evaluating gradient and hessian are larger than the variation for uniform subsampling, especially for $\boldsymbol{\beta}$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
 
 
 
