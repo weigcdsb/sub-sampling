@@ -7,12 +7,12 @@ library(COMPoissonReg)
 set.seed(123)
 #### generate data
 n <- 10000
-x <- rnorm(n, 0, 0.5)
-beta <- c(0, 2)
+x <- rnorm(n, 0, 1)
+beta <- c(0, 1)
 lam <- exp(cbind(1, x) %*% beta)
 
-g <- rnorm(n, 1, 1.5)
-gam <- c(1, 0.5)
+g <- rnorm(n, 1, 1)
+gam <- c(1, 1)
 nu <- exp(cbind(1, g) %*% gam)
 
 # plot(lam)

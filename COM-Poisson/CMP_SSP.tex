@@ -139,16 +139,16 @@ Here I first generate the data by CMP distribution.\\
 \\
 There are $n = 10000$ independent observations, with $Y_i \sim CMP(\lambda_i, \nu_i)$ for $i = 1, 2,..., n$. The $\lambda_i$ and $\nu_i$ are modeled as:
 \begin{align*}
-	\lambda_i &= \exp(2x_{i1})\\
-	\nu_i &= \exp(1 + 0.5g_{i1})
+	\lambda_i &= \exp(x_{i1})\\
+	\nu_i &= \exp(1 + g_{i1})
 \end{align*}
-where $x_{i1} \stackrel{i.i.d.}{\sim} N(0, 0.5^2)$ and $g_{i1} \stackrel{i.i.d.}{\sim} N(1, 1.5^2)$ The following two plots show the fitted mean and median for 1) Poisson regression, 2) CMP regression, with constant $\nu_i = \nu$ (constant CMP) and 3) CMP with $\nu_i$ modeled by $g_{i1}$ (full CMP).\\
+where $x_{i1} \stackrel{i.i.d.}{\sim} N(0, 1)$ and $g_{i1} \stackrel{i.i.d.}{\sim} N(1, 1)$ The following two plots show the fitted mean and median for 1) Poisson regression, 2) CMP regression, with constant $\nu_i = \nu$ (constant CMP) and 3) CMP with $\nu_i$ modeled by $g_{i1}$ (full CMP).\\
 \graphicspath{{D:/GitHub/sub-sampling/COM-Poisson/cdoe/}}
 \includegraphics[width = .6\textwidth]{mean.png}
 \includegraphics[width = .6\textwidth]{median.png}
-The MSEs ($\frac{(Y_i - \bar{Y})^2}{n}$) for mean are 1) Poisson: 0.961, 2) constant CMP: 0.958 and 3) full CMP: 0.401. The Poisson model and constant dispersion CMP model are not good for handling extreme observations. Therefore, it's necessary to take dispersion into account and CMP is a good choice.\\
+The MSEs ($\frac{(Y_i - \bar{Y})^2}{n}$) for mean are 1) Poisson: 2.269, 2) constant CMP: 2.273 and 3) full CMP: 0.391. The Poisson model and constant dispersion CMP model are not good for handling extreme observations. Therefore, it's necessary to take dispersion into account and CMP is a good choice.\\
 \\
-The running time for these three: 1)Poisson: 0.07s, 2) constant CMP: 2.29 and 3) full CMP: 4.29. This shows that CMP regression is much more computational expensive than regular Poisson regression, which suggests the necessity of sub-sampling.
+The running time for these three: 1)Poisson: 0.03s, 2) constant CMP: 2.40s and 3) full CMP: 3.59s. This shows that CMP regression is much more computational expensive than regular Poisson regression, which suggests the necessity of sub-sampling.
 
 \section{Sub-sampling in CMP}
 To fit the CMP regression model, although we can use regular Newton-Raphson method to maximize the likelihood, the information matrix may not be stable. Therefore (as far as I know), there are two methods to deal with that: 1) use direct optimization strategy, such as L-BFGS-B and 2) optimize $\boldsymbol{\beta}$ and $\boldsymbol{\gamma}$ in an alternative way, i.e. hold one part fixed when fitting another. The alternating method reduces the problem into a two-step Newton-Raphson/ IRWLS problem.\\
@@ -168,7 +168,7 @@ Then I use the bootstrap ($B = 500$) to calculate the MSE for $\boldsymbol{\beta
 \includegraphics[width = .6\textwidth]{gamma.png}
 \includegraphics[width = .6\textwidth]{theta.png}
 \\
-It seems that the gradient and hessian (numerically evaluated) is not stable, and the variations for evaluating gradient and hessian are larger than the variation for uniform subsampling, especially for $\boldsymbol{\beta}$.
+It seems that the gradient and hessian (numerically evaluated) is not stable, and the variations for evaluating gradient and hessian are larger than the variation for uniform subsampling, especially for $\boldsymbol{\beta}$. ($\boldsymbol{\gamma}$ is always better than $\boldsymbol{\beta}$, in the limited simulations) 
 
 
 
