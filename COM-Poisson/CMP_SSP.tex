@@ -163,7 +163,9 @@ to
 \end{lstlisting} 
 The weights are normalized such that the summation of weights equals to sample size. Therefore, I can use the modified functions to maximizes the weighted likelihood.\\
 \\
-Then I use the bootstrap ($B = 500$) to calculate the MSE for $\boldsymbol{\beta}$, $\boldsymbol{\gamma}$ and the overall $\boldsymbol{\theta}$. Well...\\
+The gradient and hessian are calculated by truncated summation (1000 steps), according to estimated p.m.f. by package ($\hat{f}(y|\lambda_i, \nu_i)$), if $\lambda_i < 2$ or $\nu_i >1$. For example, $E(Y_i) \approx \sum_{y=0}^{1000}y\cdot \hat{f}(y|\lambda_i, \nu_i)$\\
+\\
+Then I use the bootstrap ($B = 500$) to calculate the MSE for $\boldsymbol{\beta}$, $\boldsymbol{\gamma}$ and the overall $\boldsymbol{\theta}$. In some cases (rare), bad subsamples will make the algorithm crash down (e.g. infinite function for L-BFGS-B). Here, I simply discarded those bad bootstrap samples (This will cause problems?) Well...\\
 \includegraphics[width = .6\textwidth]{beta.png}
 \includegraphics[width = .6\textwidth]{gamma.png}
 \includegraphics[width = .6\textwidth]{theta.png}
