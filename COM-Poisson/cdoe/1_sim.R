@@ -114,54 +114,69 @@ mean((y - predict.cmp.quantile(0.5, fit3, cbind(1, x)))^2)
 
 #################################
 #### common functions
-moment_sum <- function(lam, nu, nMax = 1000, gradOnly){
+moment_sum <- function(lam, nu, nMax = 500, gradOnly){
   
+  # if(lam >= 2 & nu <= 1){
+  #   alph <- lam^(1/nu)
+  #   E_y <- alph - (nu - 1)/(2*nu) -
+  #     (nu^2 - 1)/(alph*24*(nu^2)) -
+  #     (nu^2 - 1)/(alph^2*24*(nu^3))
+  # 
+  #   E_logyFac <- alph*(log(lam)/nu - 1) +
+  #     log(lam)/(2*nu^2) + 1/(2*nu) + log(2*pi)/2 -
+  #     (1/(24*alph))*(1 + 1/(nu^2) + log(lam)/nu - log(lam)/(nu^3)) -
+  #     (1/(24*alph^2))*(1/(nu^3) + log(lam)/(nu^2) - log(lam)/nu^4)
+  # 
+  #   if(gradOnly){
+  #     Var_y <- NA
+  #     Var_logyFac <- NA
+  #     Cov_y_logyFac <- NA
+  #   }else{
+  #     Var_y <- alph/nu + (nu^2 - 1)/(alph*24*(nu^3)) +
+  #       (nu^2 - 1)/(alph^2*12*(nu^4))
+  # 
+  # 
+  #     Var_logyFac <- alph*(log(lam))^2/(nu^3) + log(lam)/(nu^3) + 1/(2*nu^2) +
+  #       (1/(alph*24*(nu^5)))*(-2*(nu^2) + 4*nu*log(lam) + (-1 + nu^2)*(log(lam))^2) +
+  #       (1/((alph^2)*24*(nu^6)))*(-3*nu^2 - 2*nu*(-3 + nu^2)*log(lam) + 2*(-1 + nu^2)*(log(lam))^2)
+  # 
+  # 
+  #     Cov_y_logyFac <- alph*log(lam)/(nu^2) + 1/(2*nu^2) +
+  #       (1/(24*alph))*(2/(nu^3) + log(lam)/(nu^2) - log(lam)/(nu^4)) -
+  #       (1/(24*alph^2))*(1/(nu^2)- 3/(nu^4) - 2*log(lam)/(nu^3) + 2*log(lam)/(nu^5))
+  #   }
+  # 
+  # }else{
+  #   pmf <- dcmp(0:nMax, lam, nu)
+  #   E_y <- sum((0:nMax)*pmf)
+  #   E_logyFac <- sum((lgamma(1:(nMax + 1)))*pmf)
+  # 
+  #   if(gradOnly){
+  #     Var_y <- NA
+  #     Var_logyFac <- NA
+  #     Cov_y_logyFac <- NA
+  #   }else{
+  #     Var_y <- sum((0:nMax)^2*pmf) - E_y^2
+  #     Var_logyFac <- sum((lgamma(1:(nMax + 1))^2)*pmf) - E_logyFac^2
+  #     Cov_y_logyFac <- sum((0:nMax)*(lgamma(1:(nMax + 1)))*pmf) -E_y*E_logyFac
+  #   }
+  # }
   
-  if(lam >= 2 & nu <= 1){
-    alph <- lam^(1/nu)
-    E_y <- alph - (nu - 1)/(2*nu) -
-      (nu^2 - 1)/(alph*24*(nu^2)) -
-      (nu^2 - 1)/(alph^2*24*(nu^3))
-    
-    E_logyFac <- alph*(log(lam)/nu - 1) +
-      log(lam)/(2*nu^2) + 1/(2*nu) + log(2*pi)/2 -
-      (1/(24*alph))*(1 + 1/(nu^2) + log(lam)/nu - log(lam)/(nu^3)) -
-      (1/(24*alph^2))*(1/(nu^3) + log(lam)/(nu^2) - log(lam)/nu^4)
-    
-    if(gradOnly){
-      Var_y <- NA
-      Var_logyFac <- NA
-      Cov_y_logyFac <- NA
-    }else{
-      Var_y <- alph/nu + (nu^2 - 1)/(alph*24*(nu^3)) +
-        (nu^2 - 1)/(alph^2*12*(nu^4))
-      
-      
-      Var_logyFac <- alph*(log(lam))^2/(nu^3) + log(lam)/(nu^3) + 1/(2*nu^2) +
-        (1/(alph*24*(nu^5)))*(-2*(nu^2) + 4*nu*log(lam) + (-1 + nu^2)*(log(lam))^2) +
-        (1/((alph^2)*24*(nu^6)))*(-3*nu^2 - 2*nu*(-3 + nu^2)*log(lam) + 2*(-1 + nu^2)*(log(lam))^2)
-      
-      
-      Cov_y_logyFac <- alph*log(lam)/(nu^2) + 1/(2*nu^2) +
-        (1/(24*alph))*(2/(nu^3) + log(lam)/(nu^2) - log(lam)/(nu^4)) -
-        (1/(24*alph^2))*(1/(nu^2)- 3/(nu^4) - 2*log(lam)/(nu^3) + 2*log(lam)/(nu^5))
-    }
-    
+  pmf <- dcmp(0:nMax, lam, nu)
+  E_y <- sum((0:nMax)*pmf)
+  E_logyFac <- sum((lgamma(1:(nMax + 1)))*pmf)
+  
+  if(gradOnly){
+    Var_y <- NA
+    Var_logyFac <- NA
+    Cov_y_logyFac <- NA
   }else{
-    pmf <- dcmp(0:nMax, lam, nu)
-    E_y <- sum((0:nMax)*pmf)
-    E_logyFac <- sum((lgamma(1:(nMax + 1)))*pmf)
-    
-    if(gradOnly){
-      Var_y <- NA
-      Var_logyFac <- NA
-      Cov_y_logyFac <- NA
-    }else{
-      Var_y <- sum((0:nMax)^2*pmf) - E_y^2
-      Var_logyFac <- sum((lgamma(1:(nMax + 1))^2)*pmf) - E_logyFac^2
-      Cov_y_logyFac <- sum((0:nMax)*(lgamma(1:(nMax + 1)))*pmf) -E_y*E_logyFac
-    }
+    Var_y <- sum((0:nMax)^2*pmf) - E_y^2
+    Var_logyFac <- sum((lgamma(1:(nMax + 1))^2)*pmf) - E_logyFac^2
+    Cov_y_logyFac <- sum((0:nMax)*(lgamma(1:(nMax + 1)))*pmf) -E_y*E_logyFac
   }
+  
+  
   
   return(list(E_y = E_y, Var_y = Var_y,
               E_logyFac = E_logyFac, Var_logyFac = Var_logyFac,
@@ -275,23 +290,26 @@ for(i in 1:length(r)){
     boolFalse<-F
     while(boolFalse==F)
     {
-      tryCatch({
-        print(j)
-        unif.idx <- sample(1:n, unif.r.total, replace = T)
-        unif.y <- y[unif.idx]
-        unif.x <- x[unif.idx]
-        unif.g <- g[unif.idx]
-        
-        unif.ssp <- 1/unif.r.total
-        w <- rep(1/unif.ssp, unif.r.total)
-        w <- unif.r.total*w/sum(w)
-        
-        
-        unif.theta.boot[j, ] <- coef(glm.cmp(unif.y ~ unif.x, unif.y ~ unif.g,
-                                             weights = w))
-        boolFalse<-T
-      },error=function(e){
-      },finally={})
+      tryCatch(expr = {
+        withTimeout({
+          print(j)
+          unif.idx <- sample(1:n, unif.r.total, replace = T)
+          unif.y <- y[unif.idx]
+          unif.x <- x[unif.idx]
+          unif.g <- g[unif.idx]
+          
+          unif.ssp <- 1/unif.r.total
+          w <- rep(1/unif.ssp, unif.r.total)
+          w <- unif.r.total*w/sum(w)
+          
+          
+          unif.theta.boot[j, ] <- coef(glm.cmp(unif.y ~ unif.x, unif.y ~ unif.g,
+                                               weights = w))
+          boolFalse<-T
+        }, timeout = 30)
+      },error=function(e){},
+      TimeoutException = function(ex) cat("Timeout. Skipping.\n"),
+      finally={})
     }
     
   }
@@ -323,36 +341,39 @@ for(i in 1:length(r)){
   
   for(j in 1:S){
     
-    boolFalse<-F
+    boolFalse <- F
     while(boolFalse==F)
     {
-      tryCatch({
-        print(j)
-        pilot.result <- pilot(x, g, y, r0)
-        
-        pilot.theta <- pilot.result$theta
-        gradInf <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
-                            pilot.theta[(length(beta) + 1):length(pilot.theta)])
-        
-        mMSE.ssp <- apply(abs(solve(gradInf$info) %*%
-                                t(gradInf$grad_each)), 2, sum)
-        mMSE.ssp <- mMSE.ssp/sum(mMSE.ssp)
-        mMSE.idx <- sample(1:n, r[i], replace = T, prob = mMSE.ssp)
-        
-        # combined
-        mMSE.y <- y[c(mMSE.idx, pilot.result$idx)]
-        mMSE.x <- x[c(mMSE.idx, pilot.result$idx)]
-        mMSE.g <- g[c(mMSE.idx, pilot.result$idx)]
-        mMSE.ssp.star <- c(mMSE.ssp[mMSE.idx], pilot.result$ssp)
-        
-        w <- 1/mMSE.ssp.star
-        w <- (r[i]+r0)*w/sum(w)
-        
-        mMSE.theta.boot[j, ] <- coef(glm.cmp(mMSE.y ~ mMSE.x, mMSE.y ~ mMSE.g,
-                                             weights = w))
-        boolFalse<-T
-      },error=function(e){
-      },finally={})
+      tryCatch(expr = {
+        withTimeout({
+          print(j)
+          pilot.result <- pilot(x, g, y, r0)
+          
+          pilot.theta <- pilot.result$theta
+          gradInf <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
+                              pilot.theta[(length(beta) + 1):length(pilot.theta)])
+          
+          mMSE.ssp <- apply(abs(solve(gradInf$info) %*%
+                                  t(gradInf$grad_each)), 2, sum)
+          mMSE.ssp <- mMSE.ssp/sum(mMSE.ssp)
+          mMSE.idx <- sample(1:n, r[i], replace = T, prob = mMSE.ssp)
+          
+          # combined
+          mMSE.y <- y[c(mMSE.idx, pilot.result$idx)]
+          mMSE.x <- x[c(mMSE.idx, pilot.result$idx)]
+          mMSE.g <- g[c(mMSE.idx, pilot.result$idx)]
+          mMSE.ssp.star <- c(mMSE.ssp[mMSE.idx], pilot.result$ssp)
+          
+          w <- 1/mMSE.ssp.star
+          w <- (r[i]+r0)*w/sum(w)
+          
+          mMSE.theta.boot[j, ] <- coef(glm.cmp(mMSE.y ~ mMSE.x, mMSE.y ~ mMSE.g,
+                                               weights = w))
+          boolFalse<-T
+        }, timeout = 30)
+      },error=function(e){},
+      TimeoutException = function(ex) cat("Timeout. Skipping.\n"),
+      finally={})
     }
     
   }
@@ -390,31 +411,34 @@ for(i in 1:length(r)){
     boolFalse<-F
     while(boolFalse==F)
     {
-      tryCatch({
-        print(j)
-        pilot.result <- pilot(x, g, y, r0)
-        
-        pilot.theta <- pilot.result$theta
-        grad <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
-                         pilot.theta[(length(beta) + 1):length(pilot.theta)], gradOnly = T)
-        
-        mVC.ssp <- apply(abs(grad$grad_each), 1, sum)
-        mVC.ssp <- mVC.ssp/sum(mVC.ssp)
-        mVC.idx <- sample(1:n, r[i], replace = T, prob = mVC.ssp)
-        
-        # combined
-        mVC.y <- y[c(mVC.idx, pilot.result$idx)]
-        mVC.x <- x[c(mVC.idx, pilot.result$idx)]
-        mVC.g <- g[c(mVC.idx, pilot.result$idx)]
-        mVC.ssp.star <- c(mVC.ssp[mVC.idx], pilot.result$ssp)
-        
-        w <- 1/mVC.ssp.star
-        w <- (r[i]+r0)*w/sum(w)
-        mVC.theta.boot[j, ] <- coef(glm.cmp(mVC.y ~ mVC.x, mVC.y ~ mVC.g,
-                                            weights = w))
-        boolFalse<-T
-      },error=function(e){
-      },finally={})
+      tryCatch(expr = {
+        withTimeout({
+          print(j)
+          pilot.result <- pilot(x, g, y, r0)
+          
+          pilot.theta <- pilot.result$theta
+          grad <- gradInfo(x, g, y, pilot.theta[1:length(beta)],
+                           pilot.theta[(length(beta) + 1):length(pilot.theta)], gradOnly = T)
+          
+          mVC.ssp <- apply(abs(grad$grad_each), 1, sum)
+          mVC.ssp <- mVC.ssp/sum(mVC.ssp)
+          mVC.idx <- sample(1:n, r[i], replace = T, prob = mVC.ssp)
+          
+          # combined
+          mVC.y <- y[c(mVC.idx, pilot.result$idx)]
+          mVC.x <- x[c(mVC.idx, pilot.result$idx)]
+          mVC.g <- g[c(mVC.idx, pilot.result$idx)]
+          mVC.ssp.star <- c(mVC.ssp[mVC.idx], pilot.result$ssp)
+          
+          w <- 1/mVC.ssp.star
+          w <- (r[i]+r0)*w/sum(w)
+          mVC.theta.boot[j, ] <- coef(glm.cmp(mVC.y ~ mVC.x, mVC.y ~ mVC.g,
+                                              weights = w))
+          boolFalse<-T
+        }, timeout = 30)
+      },error=function(e){},
+      TimeoutException = function(ex) cat("Timeout. Skipping.\n"),
+      finally={})
     }
     
   }

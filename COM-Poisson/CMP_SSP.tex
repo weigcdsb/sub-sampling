@@ -62,8 +62,8 @@ The moments $E(Y_i)$, $Var(Y_i)$, $E(log(Y_i!))$, $Var(log(Y_i!))$ and $Cov(Y_i,
 \begin{equation*}
 	Z_i = \frac{e^{\nu_i \lambda_i^{1/\nu_i}}}{\lambda_i^{\frac{\nu_i-1}{2\nu_i}}}\left(1 + c_1(\nu_i \lambda_i^{1/\nu_i})^{-1} + c_2(\nu_i \lambda_i^{1/nu_i})^{-2} + \mathcal{O}(\lambda_i^{\frac{-3}{\nu_i}})\right)
 \end{equation*}
-
-The approximation works well when $\lambda_i \geq 2$ and $\nu_i \leq 1$, and this can be helpful when updating/ calculating the gradient and hessian matrix.\\
+\\
+The approximation works well when $\lambda_i \geq 2$ and $\nu_i \leq 1$, and this can be helpful when updating/ calculating the gradient and hessian matrix. Currently, I didn't use this approximation for simplicity.\\
 \\
 If we use models $\log(\lambda_i) = \boldsymbol{x_i}'\boldsymbol{\beta}$ and $\log(\nu_i) = \boldsymbol{g_i}'\boldsymbol{\gamma}$, by using chain rule, the gradient for $l_i$ (w.r.t $\boldsymbol{\theta}$) is:
 \begin{equation*}
@@ -163,7 +163,7 @@ to
 \end{lstlisting} 
 The weights are normalized such that the summation of weights equals to sample size. Therefore, I can use the modified functions to maximizes the weighted likelihood.\\
 \\
-The gradient and hessian are calculated by truncated summation (1000 steps), according to estimated p.m.f. by package ($\hat{f}(y|\lambda_i, \nu_i)$), if $\lambda_i < 2$ or $\nu_i >1$. For example, $E(Y_i) \approx \sum_{y=0}^{1000}y\cdot \hat{f}(y|\lambda_i, \nu_i)$\\
+The gradient and hessian are calculated by truncated summation (500 steps), according to estimated p.m.f. by package ($\hat{f}(y|\lambda_i, \nu_i)$). For example, $E(Y_i) \approx \sum_{y=0}^{500}y\cdot \hat{f}(y|\lambda_i, \nu_i)$\\
 \\
 Then I use the bootstrap ($B = 500$) to calculate the MSE for $\boldsymbol{\beta}$, $\boldsymbol{\gamma}$ and the overall $\boldsymbol{\theta}$. In some cases (rare), bad subsamples will make the algorithm crash down (e.g. infinite function for L-BFGS-B). Here, I simply discarded those bad bootstrap samples (This will cause problems?) Well...\\
 \includegraphics[width = .6\textwidth]{beta.png}

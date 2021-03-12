@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.4)  11 MAR 2021 22:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.4)  12 MAR 2021 07:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -234,7 +234,7 @@ t/10 Y[]\OT1/cmr/m/n/10 )$, $\OML/cmm/m/it/10 Var\OT1/cmr/m/n/10 (\OML/cmm/m/it
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 66--69
+Underfull \hbox (badness 10000) in paragraph at lines 64--69
 
  []
 
@@ -343,7 +343,7 @@ a.png>] (./CMP_SSP.aux) )
 Here is how much of TeX's memory you used:
  4224 strings out of 479485
  56239 string characters out of 5875916
- 527908 words of memory out of 5000000
+ 526908 words of memory out of 5000000
  21223 multiletter control sequences out of 15000+600000
  539370 words of font info for 44 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -361,7 +361,7 @@ ic/amsfonts/cm/cmr5.pfb><c:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts
 pfb><c:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb><c:/te
 xlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/texlive/2020
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on CMP_SSP.pdf (5 pages, 192593 bytes).
+Output written on CMP_SSP.pdf (5 pages, 192724 bytes).
 PDF statistics:
  86 PDF objects out of 1000 (max. 8388607)
  54 compressed objects within 1 object stream
