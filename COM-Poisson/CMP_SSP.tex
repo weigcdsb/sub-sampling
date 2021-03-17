@@ -146,7 +146,7 @@ where $x_{i1} \stackrel{i.i.d.}{\sim} N(0, 1)$ and $g_{i1} \stackrel{i.i.d.}{\si
 \graphicspath{{D:/GitHub/sub-sampling/COM-Poisson/cdoe/}}
 \includegraphics[width = .6\textwidth]{mean.png}
 \includegraphics[width = .6\textwidth]{median.png}
-The MSEs ($\frac{(Y_i - \bar{Y})^2}{n}$) for mean are 1) Poisson: 2.269, 2) constant CMP: 2.273 and 3) full CMP: 0.391. The Poisson model and constant dispersion CMP model are not good for handling extreme observations. Therefore, it's necessary to take dispersion into account and CMP is a good choice.\\
+The MSEs ($\frac{(Y_i - \hat{Y})^2}{n}$) for mean are 1) Poisson: 2.269, 2) constant CMP: 2.273 and 3) full CMP: 0.391. The Poisson model and constant dispersion CMP model are not good for handling extreme observations. Therefore, it's necessary to take dispersion into account and CMP is a good choice.\\
 \\
 The running time for these three: 1)Poisson: 0.03s, 2) constant CMP: 2.40s and 3) full CMP: 3.59s. This shows that CMP regression is much more computational expensive than regular Poisson regression, which suggests the necessity of sub-sampling.
 
