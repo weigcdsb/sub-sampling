@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.4)  12 MAR 2021 14:00
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.4)  23 MAR 2021 20:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -238,133 +238,23 @@ Underfull \hbox (badness 10000) in paragraph at lines 64--69
 
  []
 
-[1
+! I can't write on file `CMP_SSP.pdf'.
+(Press Enter to retry, or Control-Z to exit; default file extension is `.pdf')
+Please type another file name for output
+! Emergency stop.
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.69 \begin{equation*}
+                      
+*** (job aborted, file error in nonstop mode)
 
-{c:/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (39.49654pt too wide) detected at line 83
-[] \OT1/cmr/m/n/10 = []
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 92--96
-
- []
-
-
-Overfull \hbox (13.65306pt too wide) detected at line 107
-[]
- []
-
-
-Overfull \hbox (4.55305pt too wide) in paragraph at lines 112--120
-\OT1/cmr/m/n/10 Then un-der A-optimality cri-te-rion, the sub-sampling prob-a-b
-il-i-ties (SSPs) $\OML/cmm/m/it/10 ^^Y[]$
- []
-
-[2]
-Underfull \hbox (badness 10000) in paragraph at lines 138--141
-
- []
-
-<D:/GitHub/sub-sampling/COM-Poisson/cdoe//mean.png, id=22, 433.62pt x 433.62pt>
-
-File: D:/GitHub/sub-sampling/COM-Poisson/cdoe//mean.png Graphic file (type png)
-
-<use D:/GitHub/sub-sampling/COM-Poisson/cdoe//mean.png>
-Package pdftex.def Info: D:/GitHub/sub-sampling/COM-Poisson/cdoe//mean.png  use
-d on input line 147.
-(pdftex.def)             Requested size: 207.0021pt x 207.00381pt.
-<D:/GitHub/sub-sampling/COM-Poisson/cdoe//median.png, id=23, 433.62pt x 433.62p
-t>
-File: D:/GitHub/sub-sampling/COM-Poisson/cdoe//median.png Graphic file (type pn
-g)
-<use D:/GitHub/sub-sampling/COM-Poisson/cdoe//median.png>
-Package pdftex.def Info: D:/GitHub/sub-sampling/COM-Poisson/cdoe//median.png  u
-sed on input line 148.
-(pdftex.def)             Requested size: 207.0021pt x 207.00381pt.
-
-Overfull \hbox (71.22643pt too wide) in paragraph at lines 144--152
-[] []
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 144--152
-
- []
-
-[3 <d:/GitHub/sub-sampling/COM-Poisson/cdoe//mean.png> <d:/GitHub/sub-sampling/
-COM-Poisson/cdoe//median.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 154--157
-
- []
-
-<D:/GitHub/sub-sampling/COM-Poisson/cdoe//beta.png, id=29, 433.62pt x 433.62pt>
-
-File: D:/GitHub/sub-sampling/COM-Poisson/cdoe//beta.png Graphic file (type png)
-
-<use D:/GitHub/sub-sampling/COM-Poisson/cdoe//beta.png>
-Package pdftex.def Info: D:/GitHub/sub-sampling/COM-Poisson/cdoe//beta.png  use
-d on input line 169.
-(pdftex.def)             Requested size: 207.0021pt x 207.00381pt.
-<D:/GitHub/sub-sampling/COM-Poisson/cdoe//gamma.png, id=30, 433.62pt x 433.62pt
->
-File: D:/GitHub/sub-sampling/COM-Poisson/cdoe//gamma.png Graphic file (type png
-)
-<use D:/GitHub/sub-sampling/COM-Poisson/cdoe//gamma.png>
-Package pdftex.def Info: D:/GitHub/sub-sampling/COM-Poisson/cdoe//gamma.png  us
-ed on input line 170.
-(pdftex.def)             Requested size: 207.0021pt x 207.00381pt.
-<D:/GitHub/sub-sampling/COM-Poisson/cdoe//theta.png, id=31, 433.62pt x 433.62pt
->
-File: D:/GitHub/sub-sampling/COM-Poisson/cdoe//theta.png Graphic file (type png
-)
-<use D:/GitHub/sub-sampling/COM-Poisson/cdoe//theta.png>
-Package pdftex.def Info: D:/GitHub/sub-sampling/COM-Poisson/cdoe//theta.png  us
-ed on input line 171.
-(pdftex.def)             Requested size: 207.0021pt x 207.00381pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 164--174
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 164--174
-
- []
-
-
-Overfull \hbox (71.22643pt too wide) in paragraph at lines 164--174
-[] []
- []
-
-[4] [5 <d:/GitHub/sub-sampling/COM-Poisson/cdoe//beta.png> <d:/GitHub/sub-sampl
-ing/COM-Poisson/cdoe//gamma.png> <d:/GitHub/sub-sampling/COM-Poisson/cdoe//thet
-a.png>] (./CMP_SSP.aux) ) 
+ 
 Here is how much of TeX's memory you used:
- 4224 strings out of 479485
- 56239 string characters out of 5875916
- 526908 words of memory out of 5000000
- 21223 multiletter control sequences out of 15000+600000
- 539370 words of font info for 44 fonts, out of 8000000 for 9000
+ 3235 strings out of 479485
+ 45512 string characters out of 5875916
+ 521908 words of memory out of 5000000
+ 20244 multiletter control sequences out of 15000+600000
+ 538904 words of font info for 42 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 66i,20n,72p,603b,1779s stack positions out of 5000i,500n,10000p,200000b,80000s
-<c:/texlive/2020/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmbx12.pfb><c:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmex
-10.pfb><c:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c
-:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/texlive/
-2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2020/texmf
--dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb><c:/texlive/2020/texmf-dist/fo
-nts/type1/public/amsfonts/cmextra/cmmib7.pfb><c:/texlive/2020/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmr10.pfb><c:/texlive/2020/texmf-dist/fonts/type1/publ
-ic/amsfonts/cm/cmr5.pfb><c:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmr7.pfb><c:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.
-pfb><c:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb><c:/te
-xlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/texlive/2020
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on CMP_SSP.pdf (5 pages, 192794 bytes).
-PDF statistics:
- 86 PDF objects out of 1000 (max. 8388607)
- 54 compressed objects within 1 object stream
- 0 named destinations out of 1000 (max. 500000)
- 26 words of extra memory for PDF output out of 10000 (max. 10000000)
-
+ 66i,12n,72p,603b,263s stack positions out of 5000i,500n,10000p,200000b,80000s
+!  ==> Fatal error occurred, no output PDF file produced!
